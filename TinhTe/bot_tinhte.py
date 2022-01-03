@@ -23,14 +23,30 @@ class BotTinhte:
         mydb = client['cosmos']
         self.mycol = mydb['opinions']
         self.mycola = mydb['authors']
-        self.NUMBER_CLICK_MORE_DATA = 500
+        self.NUMBER_CLICK_MORE_DATA = 2
         PROXY = 'http://127.0.0.1:8118'
         self.list_url_post = []
         self.list_post = []
+        self.list_url_post_old = []
+        self.list_url_author_old = []
+        self.list_url_author_new = []
+        myquery = {"type": "post"}
+        mydoc = self.mycol.find(myquery)
+        for x in mydoc:
+            try:
+                self.list_url_post_old.append(x['url'])
+            except:
+                pass
+        my_author = self.mycola.find()
+        for a in my_author:
+            try:
+                self.list_url_author_old.append(a['url'])
+            except:
+                pass
         CHROMEDRIVER_PATH = '/home/duong/Project/Python/crawler/chromedriver'
         WINDOW_SIZE = "1000,2000"
         chrome_options = Options()
-        # chrome_options.add_argument("--headless")
+        chrome_options.add_argument("--headless")
         chrome_options.add_argument("--window-size=%s" % WINDOW_SIZE)
         chrome_options.add_argument('--no-sandbox')
         chrome_options.add_argument('disable-infobars')
@@ -68,13 +84,9 @@ class BotTinhte:
             self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
             random_sleep()
         elements = self.driver.find_elements(By.CSS_SELECTOR, "li.jsx-934348644>div>article>a:nth-child(1)")
-        self.list_url_post = [ele.get_attribute("href") for ele in elements]
-
-    def save_list_url(self):
-        textfile = open("/home/duong/Project/Python/crawler/TinhTe/post_url.txt", "w")
-        for url in self.list_url_post:
-            textfile.write(str(url) + "\n")
-        textfile.close()
+        for ele in elements:
+            if ele.get_attribute("href") not in self.list_url_post_old:
+                self.list_url_post.append(ele.get_attribute("href"))
 
     def close(self):
         self.driver.close()
@@ -101,6 +113,7 @@ class BotTinhte:
         post['crawled_time'] = datetime.utcnow()
         post['type'] = 'post'
         post['source'] = 'Tinh Te'
+        self.list_url_author_new.append(post['url_author'])
         self.mycol.insert_one(post)
 
     def crawl_comment(self, post_url):
@@ -125,34 +138,21 @@ class BotTinhte:
         self.mycol.insert_many(list_comment)
 
     def crawl_author(self, author_url):
+        random_sleep()
         author = {}
         self.driver.get(author_url)
-        ele_name = self.driver.find_element(By.XPATH, "//h1[contains(@class, 'username')]")
-        ele_intro = self.driver.find_element(By.XPATH, "//div[contains(@class, 'bio')]")
-        ele_follower = self.driver.find_element(By.XPATH, "//div[contains(@class, 'intro')]/span[1]")
-        ele_following = self.driver.find_element(By.XPATH, "//div[contains(@class, 'intro')]/span[2]")
-        ele_age = self.driver.find_element(By.XPATH, "//div[contains(@class, 'user-stats')]/table/tbody/tr[2]/td[2]")
-        ele_npost = self.driver.find_element(By.XPATH, "//div[contains(@class, 'user-stats')]/table/tbody/tr[3]/td[2]")
-        ele_nlike = self.driver.find_element(By.XPATH, "//div[contains(@class, 'user-stats')]/table/tbody/tr[4]/td[2]")
+        ele_name = self.driver.find_element(By.XPATH, "//h1[contains(@class, 'name')]")
+        ele_intro = self.driver.find_element(By.XPATH, "//div[contains(@class, 'about')]")
+        ele_follower = self.driver.find_element(By.XPATH, "//div[contains(@class, 'profile')]/div[3]/div[3]/strong/span")
+        ele_age = self.driver.find_element(By.XPATH, "//div[contains(@class, 'profile')]/div[2]/div[2]/strong/span")
+        ele_npost = self.driver.find_element(By.XPATH, "//div[contains(@class, 'profile')]/div[3]/div[1]/strong/span")
+        ele_nlike = self.driver.find_element(By.XPATH, "//div[contains(@class, 'profile')]/div[3]/div[2]/strong/span")
         author['url'] = author_url
         author['name'] = ele_name.text
         author['intro'] = ele_intro.text
         author['follower'] = ele_follower.text
-        author['following'] = ele_following.text
         author['age'] = ele_age.text
         author['number_post'] = ele_npost.text
         author['number_like'] = ele_nlike.text
         self.mycola.insert_one(author)
 
-
-if __name__ == '__main__':
-    a = BotTinhte()
-    a.crawl_author("https://tinhte.vn/profile/duy-luan.39792/")
-    # a.crawl_comment('https://tinhte.vn/thread/trai-nghiem-ban-phim-logitech-mx-key-ban-full-du-do-choi-hon.3441999')
-    # a.parse()
-    # for i in a.list_url_post:
-    #     try:
-    #         a.crawl_post_content(i)
-    #     except:
-    #         print("Loi")
-    a.close()

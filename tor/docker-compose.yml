@@ -1,0 +1,14 @@
+version: '3'
+
+services:
+  tor:
+    image: dperson/torproxy
+    restart: always
+    ports:
+    - '8118:8118'
+    - '9051:9051'
+    volumes:
+    - "/etc/timezone:/etc/timezone:ro"
+    - "/etc/localtime:/etc/localtime:ro"
+    - './config/torrc:/etc/tor/torrc'
+

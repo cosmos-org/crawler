@@ -1,0 +1,27 @@
+ControlSocket /etc/tor/run/control
+ControlSocketsGroupWritable 1
+ControlPort 0.0.0.0:9051
+CookieAuthentication 1
+CookieAuthFileGroupReadable 1
+CookieAuthFile /etc/tor/run/control.authcookie
+DataDirectory /var/lib/tor
+RunAsDaemon 0
+User tor
+AutomapHostsOnResolve 1
+ExitPolicy reject *:*
+VirtualAddrNetworkIPv4 10.192.0.0/10
+DNSPort 5353
+SocksPort 0.0.0.0:9050 IsolateDestAddr
+TransPort 0.0.0.0:9040
+
+NumEntryGuards 8
+EnforceDistinctSubnets 0
+OptimisticData 1
+UseNTorHandshake 1
+UseEntryGuards 0
+NewCircuitPeriod 15 #15
+KeepalivePeriod 60
+CircuitBuildTimeout 5
+AllowSingleHopCircuits 1
+ExcludeSingleHopRelays 0
+
