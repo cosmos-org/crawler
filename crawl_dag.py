@@ -5,7 +5,7 @@ from textwrap import dedent
 from airflow import DAG
 
 # Operators; we need this to operate!
-from airflow.operators.bash import BashOperator
+from airflow.operators.bash_operator import BashOperator
 
 # These args will get passed on to each operator
 # You can override them on a per-task basis during operator initialization
@@ -19,7 +19,7 @@ default_args = {
     'retry_delay': timedelta(minutes=5),
 }
 with DAG(
-        'Crawl Tinh Te',
+        'CrawlTinhTe',
         default_args=default_args,
         description='Crawl post, comment, author',
         schedule_interval='0 3 * * *',
